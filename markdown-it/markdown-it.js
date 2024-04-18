@@ -3144,6 +3144,7 @@
     token_o.map = [ startLine, state.line ];
     token_o.markup = markup;
     state.line = nextLine + (haveEndMarker ? 1 : 0);
+    state.parentType = "code";
     state.md.block.tokenize(state, startLine + 1, nextLine);
     const token_c = state.push("fence_close", "code", -1);
     token_c.markup = markup;
@@ -4043,6 +4044,9 @@
     function paragraph(state, startLine, endLine) {
     const terminatorRules = state.md.block.ruler.getRules("paragraph");
     const oldParentType = state.parentType;
+    if (oldParentType === "code") {
+      return false;
+    }
     let nextLine = startLine + 1;
     state.parentType = "paragraph";
     // jump line-by-line until empty one or EOF
