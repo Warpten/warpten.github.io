@@ -1467,7 +1467,7 @@
         const oldHtml = options.html;
     options.html = true;
     console.log("rendering nested fence", typeof highlighted, highlighted, slf);
-    highlighted = slf.md.render(slf.md.parse(highlighted, env), options, env);
+    highlighted = slf.md.render(highlighted, env);
     options.html = oldHtml;
     if (highlighted.indexOf("<pre") === 0) {
       return highlighted + "\n";
