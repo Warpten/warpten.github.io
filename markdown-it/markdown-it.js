@@ -1485,6 +1485,7 @@
       // Save old html options, allow new ones
             const oldHtml = options.html;
       options.html = true;
+      console.log("rendering nested fence", highlighted, slf);
       highlighted = slf.parse(highlighted, env);
       options.html = oldHtml;
       return `<pre><code${slf.renderAttrs(tmpToken)}>${highlighted}</code></pre>\n`;
