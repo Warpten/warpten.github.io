@@ -1463,6 +1463,12 @@
     } else {
       highlighted = escapeHtml(token.content);
     }
+    // Save old html options, allow new ones
+        const oldHtml = options.html;
+    options.html = true;
+    console.log("rendering nested fence", highlighted, slf);
+    highlighted = slf.md.render(slf.md.parse(highlighted, env), options, env);
+    options.html = oldHtml;
     if (highlighted.indexOf("<pre") === 0) {
       return highlighted + "\n";
     }
@@ -1482,12 +1488,6 @@
             const tmpToken = {
         attrs: tmpAttrs
       };
-      // Save old html options, allow new ones
-            const oldHtml = options.html;
-      options.html = true;
-      console.log("rendering nested fence", highlighted, slf);
-      highlighted = slf.parse(highlighted, env);
-      options.html = oldHtml;
       return `<pre><code${slf.renderAttrs(tmpToken)}>${highlighted}</code></pre>\n`;
     }
     return `<pre><code${slf.renderAttrs(token)}>${highlighted}</code></pre>\n`;
