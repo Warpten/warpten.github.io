@@ -1466,8 +1466,8 @@
     // Save old html options, allow new ones
         const oldHtml = options.html;
     options.html = true;
-    console.log("rendering nested fence", typeof highlighted, highlighted, slf);
-    highlighted = slf.md.render(highlighted, env);
+    highlighted = slf.md.renderInline(highlighted, env);
+    console.log("rendered as ", highlighted);
     options.html = oldHtml;
     if (highlighted.indexOf("<pre") === 0) {
       return highlighted + "\n";
