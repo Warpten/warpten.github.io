@@ -1482,6 +1482,11 @@
             const tmpToken = {
         attrs: tmpAttrs
       };
+      // Save old html options, allow new ones
+            const oldHtml = options.html;
+      options.html = true;
+      highlighted = slf.parse(highlighted, env);
+      options.html = oldHtml;
       return `<pre><code${slf.renderAttrs(tmpToken)}>${highlighted}</code></pre>\n`;
     }
     return `<pre><code${slf.renderAttrs(token)}>${highlighted}</code></pre>\n`;
@@ -1514,7 +1519,7 @@
    * new Renderer()
    *
    * Creates new [[Renderer]] instance and fill [[Renderer#rules]] with defaults.
-   **/  function Renderer() {
+   **/  function Renderer(md) {
     /**
      * Renderer#rules -> Object
      *
@@ -1544,6 +1549,7 @@
      * for more details and examples.
      **/
     this.rules = assign$1({}, default_rules);
+    this.md = md;
   }
   /**
    * Renderer.renderAttrs(token) -> String
@@ -3065,7 +3071,6 @@
     function fence(state, startLine, endLine, silent) {
     let pos = state.bMarks[startLine] + state.tShift[startLine];
     let max = state.eMarks[startLine];
-    const oldLineMax = state.lineMax;
     // if it's indented more than 3 spaces, it should be a code block
         if (state.sCount[startLine] - state.blkIndent >= 4) {
       return false;
@@ -3095,8 +3100,6 @@
         if (silent) {
       return true;
     }
-    const oldParentType = state.parentType;
-    state.parentType = "code";
     // search end of block
         let nextLine = startLine;
     let haveEndMarker = false;
@@ -3138,19 +3141,12 @@
     }
     // If a fence has heading spaces, they should be removed from its inner block
         len = state.sCount[startLine];
-    const oldIndent = state.blkIndent;
-    state.blkIndent = 0;
-    const token_o = state.push("fence_open", "code", 1);
-    token_o.map = [ startLine, state.line ];
-    token_o.markup = markup;
     state.line = nextLine + (haveEndMarker ? 1 : 0);
-    state.parentType = "code";
-    state.md.block.tokenize(state, startLine + 1, nextLine);
-    const token_c = state.push("fence_close", "code", -1);
-    token_c.markup = markup;
-    state.lineMax = oldLineMax;
-    state.parentType = oldParentType;
-    state.blkIndent = oldIndent;
+    const token = state.push("fence", "code", 0);
+    token.info = params;
+    token.content = state.getLines(startLine + 1, nextLine, len, true);
+    token.markup = markup;
+    token.map = [ startLine, state.line ];
     return true;
   }
   // Block quotes
@@ -4044,9 +4040,6 @@
     function paragraph(state, startLine, endLine) {
     const terminatorRules = state.md.block.ruler.getRules("paragraph");
     const oldParentType = state.parentType;
-    if (oldParentType === "code") {
-      return false;
-    }
     let nextLine = startLine + 1;
     state.parentType = "paragraph";
     // jump line-by-line until empty one or EOF
@@ -6725,7 +6718,7 @@
      * ```
      *
      * See [[Renderer]] docs and [source code](https://github.com/markdown-it/markdown-it/blob/master/lib/renderer.mjs).
-     **/    this.renderer = new Renderer;
+     **/    this.renderer = new Renderer(this);
     /**
      * MarkdownIt#linkify -> LinkifyIt
      *
